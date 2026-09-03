@@ -176,7 +176,7 @@ def checkout(request):
                 ])
                 cart.clear()
 
-            messages.success(request, f'შეკვეთა #{order.id} მიღებულია.')
+            messages.success(request, f'შეკვეთა #{order.id} მიღებულია და ადმინთან გაიგზავნა.')
             return redirect('my_orders')
     else:
         initial = {
