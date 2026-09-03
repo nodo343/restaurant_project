@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .dish_images import get_dish_image_url
-from .models import Dish
+from .models import Dish, Order, OrderItem
 
 
 @admin.register(Dish)
@@ -36,11 +35,36 @@ class DishAdmin(admin.ModelAdmin):
 
     @admin.display(description='ფოტო')
     def image_preview(self, obj):
-        image_url = get_dish_image_url(obj)
-        if image_url:
+        if obj.image:
             return format_html(
                 '<img src="{}" alt="{}" style="width:56px;height:42px;object-fit:cover;border-radius:6px;">',
-                image_url,
+                obj.image.url,
                 obj.name,
             )
         return '—'
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('dish', 'dish_name', 'unit_price', 'quantity', 'total_price')
+    can_delete = False
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'phone', 'status', 'total_price', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('id', 'user__username', 'full_name', 'phone', 'address')
+    list_editable = ('status',)
+    readonly_fields = (
+        'user',
+        'full_name',
+        'phone',
+        'address',
+        'note',
+        'total_price',
+        'created_at',
+        'updated_at',
+    )
+    inlines = (OrderItemInline,)
