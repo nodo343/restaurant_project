@@ -53,12 +53,32 @@ class Order(models.Model):
         DELIVERED = 'delivered', 'ჩაბარებულია'
         CANCELLED = 'cancelled', 'გაუქმებულია'
 
+    class PaymentMethod(models.TextChoices):
+        CASH = 'cash', 'ნაღდი ანგარიშსწორება'
+        CARD = 'card', 'ბარათით გადახდა'
+
+    class PaymentStatus(models.TextChoices):
+        PENDING = 'pending', 'გადახდა მოლოდინშია'
+        PAID = 'paid', 'გადახდილია'
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
     full_name = models.CharField('სახელი და გვარი', max_length=180)
     phone = models.CharField('ტელეფონი', max_length=30)
     address = models.CharField('მისამართი', max_length=255)
     note = models.TextField('შენიშვნა', blank=True)
     status = models.CharField('სტატუსი', max_length=20, choices=Status.choices, default=Status.PENDING)
+    payment_method = models.CharField(
+        'გადახდის მეთოდი',
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.CASH,
+    )
+    payment_status = models.CharField(
+        'გადახდის სტატუსი',
+        max_length=20,
+        choices=PaymentStatus.choices,
+        default=PaymentStatus.PENDING,
+    )
     total_price = models.DecimalField('ჯამი', max_digits=8, decimal_places=2)
     created_at = models.DateTimeField('შექმნის დრო', auto_now_add=True)
     updated_at = models.DateTimeField('განახლების დრო', auto_now=True)
