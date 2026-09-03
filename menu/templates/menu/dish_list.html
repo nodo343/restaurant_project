@@ -1,0 +1,106 @@
+{% extends 'menu/base.html' %}
+{% load static %}
+
+{% block title %}მენიუ | Tasty Table{% endblock %}
+
+{% block content %}
+<div class="layout">
+
+    <aside class="filters">
+        <form method="get" class="filter-form">
+            <h2>ფილტრები</h2>
+
+            <div class="filter-group">
+                <h3>კატეგორია</h3>
+                {% for value, label in categories %}
+                    <label class="checkbox-row">
+                        <input type="checkbox" name="category" value="{{ value }}"
+                            {% if value in selected_categories %}checked{% endif %}>
+                        {{ label }}
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="filter-group">
+                <h3>სიცხარე (მაქსიმუმ)</h3>
+                <select name="max_spice">
+                    <option value="">ყველა</option>
+                    {% for level in spice_range %}
+                        <option value="{{ level }}" {% if max_spice|stringformat:"s" == level|stringformat:"s" %}selected{% endif %}>
+                            {{ level }} {% if level == 0 %}(არ არის ცხარე){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <h3>ნიგვზიანი</h3>
+                <label class="radio-row"><input type="radio" name="walnuts" value="" {% if walnuts == '' %}checked{% endif %}> ყველა</label>
+                <label class="radio-row"><input type="radio" name="walnuts" value="yes" {% if walnuts == 'yes' %}checked{% endif %}> დიახ</label>
+                <label class="radio-row"><input type="radio" name="walnuts" value="no" {% if walnuts == 'no' %}checked{% endif %}> არა</label>
+            </div>
+
+            <div class="filter-group">
+                <h3>ვეგეტარიანული</h3>
+                <label class="radio-row"><input type="radio" name="vegetarian" value="" {% if vegetarian == '' %}checked{% endif %}> ყველა</label>
+                <label class="radio-row"><input type="radio" name="vegetarian" value="yes" {% if vegetarian == 'yes' %}checked{% endif %}> დიახ</label>
+                <label class="radio-row"><input type="radio" name="vegetarian" value="no" {% if vegetarian == 'no' %}checked{% endif %}> არა</label>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">გაფილტვრა</button>
+                <a href="{% url 'dish_list' %}" class="btn btn-ghost">გასუფთავება</a>
+            </div>
+        </form>
+    </aside>
+
+    <section class="dish-grid-wrap">
+        <h1>მენიუ</h1>
+        <p class="results-count">{{ dishes|length }} კერძი მოიძებნა</p>
+
+        <div class="dish-grid">
+            {% for dish in dishes %}
+            <article class="dish-card">
+                <div class="dish-image">
+                    {% if dish.image %}
+                        <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
+                    {% else %}
+                        <div class="dish-image-placeholder">🍲</div>
+                    {% endif %}
+                    <span class="category-tag">{{ dish.get_category_display }}</span>
+                </div>
+
+                <div class="dish-body">
+                    <h3 class="dish-name">{{ dish.name }}</h3>
+
+                    <div class="dish-attrs">
+                        <span class="attr spice" title="სიცხარე {{ dish.spice_level }}/4">
+                            {% for i in spice_range %}
+                                {% if i < dish.spice_level %}🌶️{% else %}<span class="chili-off">🌶️</span>{% endif %}
+                            {% endfor %}
+                        </span>
+                        {% if dish.has_walnuts %}
+                            <span class="attr pill walnut">🌰 ნიგვზიანი</span>
+                        {% endif %}
+                        {% if dish.is_vegetarian %}
+                            <span class="attr pill veg">🥦 ვეგეტარიანული</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="dish-footer">
+                        <span class="price">₾{{ dish.price }}</span>
+                        <form method="post" action="{% url 'add_to_cart' dish.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-sm">კალათაში დამატება</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+                <p class="empty-state">ამ ფილტრებით კერძი ვერ მოიძებნა. სცადეთ სხვა კომბინაცია.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

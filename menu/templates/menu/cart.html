@@ -1,0 +1,90 @@
+{% extends 'menu/base.html' %}
+{% load static %}
+
+{% block title %}კალათა | Tasty Table{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <h1>თქვენი შეკვეთა</h1>
+
+    {% if cart|length == 0 %}
+        <div class="empty-cart">
+            <p>კალათა ცარიელია.</p>
+            <a href="{% url 'dish_list' %}" class="btn btn-primary">მენიუზე დაბრუნება</a>
+        </div>
+    {% else %}
+    <table class="cart-table" id="cart-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>კერძი</th>
+                <th>ფასი</th>
+                <th>რაოდენობა</th>
+                <th>ჯამი</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart %}
+            <tr class="cart-row" data-price="{{ item.dish.price }}">
+                <td class="cart-thumb">
+                    {% if item.dish.image %}
+                        <img src="{{ item.dish.image.url }}" alt="{{ item.dish.name }}">
+                    {% else %}
+                        <div class="dish-image-placeholder small">🍲</div>
+                    {% endif %}
+                </td>
+                <td>{{ item.dish.name }}</td>
+                <td>₾{{ item.dish.price }}</td>
+                <td>
+                    <form method="post" action="{% url 'update_cart_item' item.dish.id %}" class="qty-form">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" min="1" value="{{ item.quantity }}"
+                               class="qty-input" onchange="this.form.submit(); updateRowTotal(this);">
+                    </form>
+                </td>
+                <td class="row-total">₾{{ item.total_price }}</td>
+                <td>
+                    <form method="post" action="{% url 'update_cart_item' item.dish.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="remove">
+                        <button type="submit" class="btn btn-ghost btn-sm">წაშლა</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-summary">
+        <span>ჯამური თანხა:</span>
+        <span id="cart-total">₾{{ cart.get_total_price }}</span>
+    </div>
+
+    <a href="{% url 'dish_list' %}" class="btn btn-ghost">← მენიუზე დაბრუნება</a>
+    {% endif %}
+</div>
+
+<script>
+    // მსუბუქი client-side გადათვლა, რომ ჯამი ვიზუალურად მყისვე იცვლებოდეს
+    // (რეალურ, ავტორიტეტულ მნიშვნელობას სერვერი ითვლის ფორმის გაგზავნისას)
+    function updateRowTotal(input) {
+        const row = input.closest('.cart-row');
+        const price = parseFloat(row.dataset.price);
+        const qty = parseInt(input.value) || 1;
+        const rowTotalCell = row.querySelector('.row-total');
+        rowTotalCell.textContent = '₾' + (price * qty).toFixed(2);
+        recalcCartTotal();
+    }
+
+    function recalcCartTotal() {
+        let total = 0;
+        document.querySelectorAll('.cart-row').forEach(row => {
+            const price = parseFloat(row.dataset.price);
+            const qty = parseInt(row.querySelector('.qty-input').value) || 1;
+            total += price * qty;
+        });
+        document.getElementById('cart-total').textContent = '₾' + total.toFixed(2);
+    }
+</script>
+{% endblock %}
