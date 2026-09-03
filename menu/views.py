@@ -161,6 +161,12 @@ def checkout(request):
                     phone=form.cleaned_data['phone'],
                     address=form.cleaned_data['address'],
                     note=form.cleaned_data['note'],
+                    payment_method=form.cleaned_data['payment_method'],
+                    payment_status=(
+                        Order.PaymentStatus.PAID
+                        if form.cleaned_data['payment_method'] == Order.PaymentMethod.CARD
+                        else Order.PaymentStatus.PENDING
+                    ),
                     total_price=cart.get_total_price(),
                 )
                 OrderItem.objects.bulk_create([
@@ -176,7 +182,7 @@ def checkout(request):
                 ])
                 cart.clear()
 
-            messages.success(request, f'შეკვეთა #{order.id} მიღებულია და ადმინთან გაიგზავნა.')
+            messages.success(request, f'შეკვეთა #{order.id} მიღებულია. გადახდის სტატუსი: {order.get_payment_status_display()}.')
             return redirect('my_orders')
     else:
         initial = {
