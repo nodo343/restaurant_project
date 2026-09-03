@@ -10,15 +10,15 @@
             <form method="post" class="auth-form">
                 {% csrf_token %}
                 {% for field in form %}
-                    <label class="form-field">
+                    <div class="form-field{% if field.name == 'card_number' or field.name == 'card_expiry' or field.name == 'card_cvv' %} card-payment-field{% endif %}">
                         <span>{{ field.label }}</span>
                         {{ field }}
                         {% if field.errors %}
                             <small class="field-error">{{ field.errors|striptags }}</small>
                         {% endif %}
-                    </label>
+                    </div>
                 {% endfor %}
-                <button type="submit" class="btn btn-primary">შეკვეთის ადმინთან გაგზავნა</button>
+                <button type="submit" class="btn btn-primary">გადახდა და შეკვეთის გაგზავნა</button>
             </form>
         </div>
 
@@ -37,4 +37,23 @@
         </aside>
     </div>
 </section>
+
+<script>
+    const paymentInputs = document.querySelectorAll('input[name="payment_method"]');
+    const cardFields = document.querySelectorAll('.card-payment-field');
+
+    function toggleCardFields() {
+        const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+        const showCardFields = selectedPayment && selectedPayment.value === 'card';
+        cardFields.forEach(field => {
+            field.hidden = !showCardFields;
+            field.querySelectorAll('input').forEach(input => {
+                input.required = showCardFields;
+            });
+        });
+    }
+
+    paymentInputs.forEach(input => input.addEventListener('change', toggleCardFields));
+    toggleCardFields();
+</script>
 {% endblock %}
