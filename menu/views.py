@@ -20,13 +20,13 @@ def dish_list(request):
     if selected_categories:
         dishes = dishes.filter(category__in=selected_categories)
 
-    # --- სიცხარის ფილტრი (მაქსიმალური მაჩვენებელი 0-4) ---
+    # --- სიცხარის ფილტრი (ზუსტად არჩეული მაჩვენებელი 0-4) ---
     max_spice = request.GET.get('max_spice')
     if max_spice not in (None, ''):
         try:
             max_spice = int(max_spice)
             if 0 <= max_spice <= 4:
-                dishes = dishes.filter(spice_level__lte=max_spice)
+                dishes = dishes.filter(spice_level=max_spice)
             else:
                 max_spice = None
         except ValueError:
