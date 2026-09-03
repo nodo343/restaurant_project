@@ -15,6 +15,9 @@
                 <a href="{% url 'dish_list' %}">მენიუ</a>
                 {% if user.is_authenticated %}
                     <span class="user-name">{{ user.username }}</span>
+                    {% if user.is_staff %}
+                        <a href="{% url 'admin:index' %}">ადმინი</a>
+                    {% endif %}
                     <form method="post" action="{% url 'logout' %}" class="logout-form">
                         {% csrf_token %}
                         <button type="submit" class="nav-button">გამოსვლა</button>
