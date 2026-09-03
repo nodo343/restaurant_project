@@ -1,0 +1,40 @@
+{% extends 'menu/base.html' %}
+
+{% block title %}შეკვეთის გაფორმება | Tasty Table{% endblock %}
+
+{% block content %}
+<section class="checkout-page">
+    <div class="checkout-grid">
+        <div class="checkout-panel">
+            <h1>შეკვეთის გაფორმება</h1>
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                {% for field in form %}
+                    <label class="form-field">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.errors %}
+                            <small class="field-error">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </label>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">შეკვეთის დადასტურება</button>
+            </form>
+        </div>
+
+        <aside class="order-summary">
+            <h2>კალათა</h2>
+            {% for item in cart %}
+                <div class="summary-row">
+                    <span>{{ item.dish.name }} x{{ item.quantity }}</span>
+                    <strong>₾{{ item.total_price }}</strong>
+                </div>
+            {% endfor %}
+            <div class="summary-total">
+                <span>ჯამი</span>
+                <strong>₾{{ cart.get_total_price }}</strong>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}
