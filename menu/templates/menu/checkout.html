@@ -1,12 +1,12 @@
 {% extends 'menu/base.html' %}
 
-{% block title %}შეკვეთის გაფორმება | Tasty Table{% endblock %}
+{% block title %}შეკვეთის მიღება | Tasty Table{% endblock %}
 
 {% block content %}
 <section class="checkout-page">
     <div class="checkout-grid">
         <div class="checkout-panel">
-            <h1>შეკვეთის გაფორმება</h1>
+            <h1>შეკვეთის მიღება</h1>
             <form method="post" class="auth-form">
                 {% csrf_token %}
                 {% for field in form %}
@@ -18,7 +18,7 @@
                         {% endif %}
                     </label>
                 {% endfor %}
-                <button type="submit" class="btn btn-primary">შეკვეთის დადასტურება</button>
+                <button type="submit" class="btn btn-primary">შეკვეთის ადმინთან გაგზავნა</button>
             </form>
         </div>
 
