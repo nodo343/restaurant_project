@@ -1,19 +1,27 @@
 from urllib.parse import quote
 
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .models import Dish
 from .cart import Cart
-from .dish_images import get_dish_image_url
-from .forms import LoginForm, RegisterForm
+from .forms import CheckoutForm, LoginForm, RegisterForm
+from .models import Dish, Order, OrderItem
 
 
 def dish_list(request):
     dishes = Dish.objects.all()
+    search_query = request.GET.get('q', '').strip()
+
+    if search_query:
+        dishes = dishes.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
 
     # --- კატეგორიის ფილტრი (შეიძლება რამდენიმეს არჩევა) ---
     selected_categories = request.GET.getlist('category')
@@ -46,12 +54,13 @@ def dish_list(request):
     elif vegetarian == 'no':
         dishes = dishes.filter(is_vegetarian=False)
 
-    dishes = list(dishes)
-    for dish in dishes:
-        dish.card_image_url = get_dish_image_url(dish)
+    paginator = Paginator(dishes, 8)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
     context = {
-        'dishes': dishes,
+        'dishes': page_obj,
+        'page_obj': page_obj,
+        'search_query': search_query,
         'categories': Dish.Category.choices,
         'selected_categories': selected_categories,
         'max_spice': max_spice if max_spice not in (None, '') else '',
@@ -134,6 +143,65 @@ def cart_detail(request):
     return render(request, 'menu/cart.html', context)
 
 
+@login_required
+def checkout(request):
+    cart = Cart(request)
+    if len(cart) == 0:
+        messages.warning(request, 'კალათა ცარიელია.')
+        return redirect('cart_detail')
+
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            cart_items = list(cart)
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=request.user,
+                    full_name=form.cleaned_data['full_name'],
+                    phone=form.cleaned_data['phone'],
+                    address=form.cleaned_data['address'],
+                    note=form.cleaned_data['note'],
+                    total_price=cart.get_total_price(),
+                )
+                OrderItem.objects.bulk_create([
+                    OrderItem(
+                        order=order,
+                        dish=item['dish'],
+                        dish_name=item['dish'].name,
+                        unit_price=item['dish'].price,
+                        quantity=item['quantity'],
+                        total_price=item['total_price'],
+                    )
+                    for item in cart_items
+                ])
+                cart.clear()
+
+            messages.success(request, f'შეკვეთა #{order.id} მიღებულია.')
+            return redirect('my_orders')
+    else:
+        initial = {
+            'full_name': request.user.get_full_name() or request.user.username,
+        }
+        form = CheckoutForm(initial=initial)
+
+    context = {
+        'form': form,
+        'cart': cart,
+        'cart_count': len(cart),
+    }
+    return render(request, 'menu/checkout.html', context)
+
+
+@login_required
+def my_orders(request):
+    orders = request.user.orders.prefetch_related('items')
+    context = {
+        'orders': orders,
+        'cart_count': len(Cart(request)),
+    }
+    return render(request, 'menu/my_orders.html', context)
+
+
 @require_POST
 def update_cart_item(request, dish_id):
     cart = Cart(request)
@@ -147,5 +215,17 @@ def update_cart_item(request, dish_id):
         except ValueError:
             quantity = 1
         cart.set_quantity(dish_id, quantity)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        dish_total = '0.00'
+        for item in cart:
+            if item['dish'].id == dish_id:
+                dish_total = f"{item['total_price']:.2f}"
+                break
+        return JsonResponse({
+            'cart_count': len(cart),
+            'cart_total': f"{cart.get_total_price():.2f}",
+            'item_total': dish_total,
+        })
 
     return redirect('cart_detail')
