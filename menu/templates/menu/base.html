@@ -13,6 +13,16 @@
             <a href="{% url 'dish_list' %}" class="brand">🍽️ Tasty&nbsp;Table</a>
             <nav class="nav-links">
                 <a href="{% url 'dish_list' %}">მენიუ</a>
+                {% if user.is_authenticated %}
+                    <span class="user-name">{{ user.username }}</span>
+                    <form method="post" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-button">გამოსვლა</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}">შესვლა</a>
+                    <a href="{% url 'register' %}">რეგისტრაცია</a>
+                {% endif %}
                 <a href="{% url 'cart_detail' %}" class="cart-link">
                     კალათა
                     <span class="cart-badge">{{ cart_count }}</span>
