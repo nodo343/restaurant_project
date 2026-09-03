@@ -1,0 +1,36 @@
+{% extends 'menu/base.html' %}
+
+{% block title %}რეგისტრაცია | Tasty Table{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-panel">
+        <h1>რეგისტრაცია</h1>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% for field in form %}
+                <label class="form-field">
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% if field.errors %}
+                        <small class="field-error">{{ field.errors|striptags }}</small>
+                    {% endif %}
+                </label>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">რეგისტრაცია</button>
+        </form>
+
+        <p class="auth-switch">
+            უკვე გაქვთ ანგარიში?
+            <a href="{% url 'login' %}">შესვლა</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
