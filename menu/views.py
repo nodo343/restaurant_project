@@ -25,7 +25,10 @@ def dish_list(request):
     if max_spice not in (None, ''):
         try:
             max_spice = int(max_spice)
-            dishes = dishes.filter(spice_level__lte=max_spice)
+            if 0 <= max_spice <= 4:
+                dishes = dishes.filter(spice_level__lte=max_spice)
+            else:
+                max_spice = None
         except ValueError:
             max_spice = None
 
@@ -54,7 +57,8 @@ def dish_list(request):
         'max_spice': max_spice if max_spice not in (None, '') else '',
         'walnuts': walnuts or '',
         'vegetarian': vegetarian or '',
-        'spice_range': range(0, 5),
+        'spice_levels': Dish.SPICE_LEVEL_CHOICES,
+        'spice_slots': range(1, 5),
         'cart_count': len(Cart(request)),
     }
     return render(request, 'menu/dish_list.html', context)
