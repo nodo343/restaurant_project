@@ -378,3 +378,12 @@ a { color: inherit; text-decoration: none; }
     font-size: 0.8rem;
     padding: 24px;
 }
+
+.filters .filter-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.filters .filter-actions .btn {
+    width: 100%;
+}
