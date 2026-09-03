@@ -3,6 +3,14 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Dish(models.Model):
+    SPICE_LEVEL_CHOICES = [
+        (0, '0 - არ არის ცხარე'),
+        (1, '1 - ოდნავ ცხარე'),
+        (2, '2 - საშუალოდ ცხარე'),
+        (3, '3 - ცხარე'),
+        (4, '4 - ძალიან ცხარე'),
+    ]
+
     class Category(models.TextChoices):
         SALADS = 'Salads', 'Salads'
         SOUPS = 'Soups', 'Soups'
@@ -18,6 +26,7 @@ class Dish(models.Model):
     image = models.ImageField('სურათი', upload_to='dishes/', blank=True, null=True)
     spice_level = models.PositiveSmallIntegerField(
         'სიცხარის მაჩვენებელი',
+        choices=SPICE_LEVEL_CHOICES,
         validators=[MinValueValidator(0), MaxValueValidator(4)],
         default=0,
     )
