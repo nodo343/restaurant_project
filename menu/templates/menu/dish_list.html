@@ -89,10 +89,14 @@
 
                     <div class="dish-footer">
                         <span class="price">₾{{ dish.price }}</span>
-                        <form method="post" action="{% url 'add_to_cart' dish.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary btn-sm">კალათაში დამატება</button>
-                        </form>
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'add_to_cart' dish.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm">კალათაში დამატება</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-primary btn-sm">შესვლა</a>
+                        {% endif %}
                     </div>
                 </div>
             </article>
