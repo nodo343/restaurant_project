@@ -1,5 +1,6 @@
-from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+from django.db import models
 
 
 class Dish(models.Model):
@@ -42,3 +43,46 @@ class Dish(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Order(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'მიღებულია'
+        PREPARING = 'preparing', 'მზადდება'
+        ON_THE_WAY = 'on_the_way', 'გზაშია'
+        DELIVERED = 'delivered', 'ჩაბარებულია'
+        CANCELLED = 'cancelled', 'გაუქმებულია'
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    full_name = models.CharField('სახელი და გვარი', max_length=180)
+    phone = models.CharField('ტელეფონი', max_length=30)
+    address = models.CharField('მისამართი', max_length=255)
+    note = models.TextField('შენიშვნა', blank=True)
+    status = models.CharField('სტატუსი', max_length=20, choices=Status.choices, default=Status.PENDING)
+    total_price = models.DecimalField('ჯამი', max_digits=8, decimal_places=2)
+    created_at = models.DateTimeField('შექმნის დრო', auto_now_add=True)
+    updated_at = models.DateTimeField('განახლების დრო', auto_now=True)
+
+    class Meta:
+        verbose_name = 'შეკვეთა'
+        verbose_name_plural = 'შეკვეთები'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'შეკვეთა #{self.id}'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    dish = models.ForeignKey(Dish, on_delete=models.SET_NULL, blank=True, null=True, related_name='order_items')
+    dish_name = models.CharField('კერძი', max_length=150)
+    unit_price = models.DecimalField('ერთეულის ფასი', max_digits=6, decimal_places=2)
+    quantity = models.PositiveIntegerField('რაოდენობა')
+    total_price = models.DecimalField('ჯამი', max_digits=8, decimal_places=2)
+
+    class Meta:
+        verbose_name = 'შეკვეთის კერძი'
+        verbose_name_plural = 'შეკვეთის კერძები'
+
+    def __str__(self):
+        return f'{self.dish_name} x{self.quantity}'
