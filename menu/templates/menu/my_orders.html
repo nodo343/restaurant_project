@@ -31,6 +31,10 @@
                         <span>ჯამი</span>
                         <strong>₾{{ order.total_price }}</strong>
                     </div>
+                    <div class="payment-meta">
+                        <span>{{ order.get_payment_method_display }}</span>
+                        <strong>{{ order.get_payment_status_display }}</strong>
+                    </div>
                 </article>
             {% endfor %}
         </div>
