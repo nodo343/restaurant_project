@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.views.decorators.http import require_POST
 
 from .models import Dish
 from .cart import Cart
+from .forms import LoginForm, RegisterForm
 
 
 def dish_list(request):
@@ -48,6 +50,51 @@ def dish_list(request):
         'cart_count': len(Cart(request)),
     }
     return render(request, 'menu/dish_list.html', context)
+
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'რეგისტრაცია წარმატებით დასრულდა.')
+            return redirect('dish_list')
+    else:
+        form = RegisterForm()
+
+    context = {
+        'form': form,
+        'cart_count': len(Cart(request)),
+    }
+    return render(request, 'menu/register.html', context)
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('dish_list')
+
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
+            messages.success(request, 'წარმატებით შეხვედით ანგარიშში.')
+            return redirect(request.GET.get('next') or 'dish_list')
+    else:
+        form = LoginForm()
+
+    context = {
+        'form': form,
+        'cart_count': len(Cart(request)),
+    }
+    return render(request, 'menu/login.html', context)
+
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'ანგარიშიდან გამოხვედით.')
+    return redirect('dish_list')
 
 
 @require_POST
