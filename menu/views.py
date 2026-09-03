@@ -1,6 +1,9 @@
+from urllib.parse import quote
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .models import Dish
@@ -99,6 +102,11 @@ def logout_view(request):
 
 @require_POST
 def add_to_cart(request, dish_id):
+    if not request.user.is_authenticated:
+        messages.warning(request, 'კალათაში დამატებისთვის ჯერ გაიარეთ რეგისტრაცია ან შედით ანგარიშში.')
+        next_url = request.META.get('HTTP_REFERER') or reverse('dish_list')
+        return redirect(f"{reverse('login')}?next={quote(next_url)}")
+
     dish = get_object_or_404(Dish, id=dish_id)
     cart = Cart(request)
     cart.add(dish=dish, quantity=1)
