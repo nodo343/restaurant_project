@@ -4,11 +4,40 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.urls import reverse
+from django.templatetags.static import static
 from django.views.decorators.http import require_POST
 
 from .models import Dish
 from .cart import Cart
 from .forms import LoginForm, RegisterForm
+
+
+DISH_IMAGE_FILES = {
+    'Caesar Salad': 'caesar-salad.jpg',
+    'Greek Salad': 'greek-salad.jpg',
+    'Pkhali Salad': 'pkhali-salad.jpg',
+    'Chicken Soup': 'chicken-soup.jpg',
+    'Kharcho': 'kharcho.jpg',
+    'Lentil Soup': 'lentil-soup.jpg',
+    'Grilled Chicken Breast': 'grilled-chicken-breast.jpg',
+    'Spicy Chicken Wings': 'spicy-chicken-wings.jpg',
+    'Chicken Satsivi': 'chicken-satsivi.jpg',
+    'Beef Steak': 'beef-steak.jpg',
+    'Beef Burger': 'beef-burger.jpg',
+    'Spicy Beef Chili': 'spicy-beef-chili.jpg',
+    'Grilled Salmon': 'grilled-salmon.jpg',
+    'Spicy Shrimp': 'spicy-shrimp.jpg',
+    'Fish & Chips': 'fish-and-chips.jpg',
+    'Grilled Vegetables': 'grilled-vegetables.jpg',
+    'Spicy Eggplant': 'spicy-eggplant.jpg',
+    'Vegetable Stew': 'vegetable-stew.jpg',
+    'Cheese Sticks': 'cheese-sticks.jpg',
+    'Spicy Nachos': 'spicy-nachos.jpg',
+    'Chicken Nuggets': 'chicken-nuggets.jpg',
+    'French Fries': 'french-fries.jpg',
+    'Garlic Bread': 'garlic-bread.jpg',
+    'Rice Pilaf': 'rice-pilaf.jpg',
+}
 
 
 def dish_list(request):
@@ -41,6 +70,11 @@ def dish_list(request):
         dishes = dishes.filter(is_vegetarian=True)
     elif vegetarian == 'no':
         dishes = dishes.filter(is_vegetarian=False)
+
+    dishes = list(dishes)
+    for dish in dishes:
+        image_file = DISH_IMAGE_FILES.get(dish.name)
+        dish.card_image_url = dish.image.url if dish.image else static(f'menu/img/dishes/{image_file}') if image_file else ''
 
     context = {
         'dishes': dishes,
