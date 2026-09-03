@@ -33,3 +33,14 @@ class RegisterForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='მომხმარებლის სახელი')
     password = forms.CharField(label='პაროლი', widget=forms.PasswordInput)
+
+
+class CheckoutForm(forms.Form):
+    full_name = forms.CharField(label='სახელი და გვარი', max_length=180)
+    phone = forms.CharField(label='ტელეფონი', max_length=30)
+    address = forms.CharField(label='მისამართი', max_length=255)
+    note = forms.CharField(
+        label='შენიშვნა',
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3}),
+    )
