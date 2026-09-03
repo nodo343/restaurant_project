@@ -25,9 +25,9 @@
                 <h3>სიცხარე (მაქსიმუმ)</h3>
                 <select name="max_spice">
                     <option value="">ყველა</option>
-                    {% for level in spice_range %}
-                        <option value="{{ level }}" {% if max_spice|stringformat:"s" == level|stringformat:"s" %}selected{% endif %}>
-                            {{ level }} {% if level == 0 %}(არ არის ცხარე){% endif %}
+                    {% for value, label in spice_levels %}
+                        <option value="{{ value }}" {% if max_spice|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                            {{ label }}
                         </option>
                     {% endfor %}
                 </select>
@@ -75,8 +75,8 @@
 
                     <div class="dish-attrs">
                         <span class="attr spice" title="სიცხარე {{ dish.spice_level }}/4">
-                            {% for i in spice_range %}
-                                {% if i < dish.spice_level %}🌶️{% else %}<span class="chili-off">🌶️</span>{% endif %}
+                            {% for i in spice_slots %}
+                                {% if i <= dish.spice_level %}🌶️{% else %}<span class="chili-off">🌶️</span>{% endif %}
                             {% endfor %}
                         </span>
                         {% if dish.has_walnuts %}
