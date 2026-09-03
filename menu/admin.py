@@ -63,12 +63,14 @@ class OrderAdmin(admin.ModelAdmin):
         'short_address',
         'items_count',
         'status',
+        'payment_method',
+        'payment_status',
         'total_price',
         'created_at',
     )
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'payment_method', 'payment_status', 'created_at')
     search_fields = ('id', 'user__username', 'full_name', 'phone', 'address')
-    list_editable = ('status',)
+    list_editable = ('status', 'payment_status')
     list_select_related = ('user',)
     date_hierarchy = 'created_at'
     readonly_fields = (
@@ -77,6 +79,7 @@ class OrderAdmin(admin.ModelAdmin):
         'phone',
         'address',
         'note',
+        'payment_method',
         'total_price',
         'created_at',
         'updated_at',
@@ -86,7 +89,7 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('user', 'full_name', 'phone', 'address'),
         }),
         ('შეკვეთა', {
-            'fields': ('status', 'total_price', 'note'),
+            'fields': ('status', 'payment_method', 'payment_status', 'total_price', 'note'),
         }),
         ('დრო', {
             'fields': ('created_at', 'updated_at'),
