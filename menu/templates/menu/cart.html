@@ -40,7 +40,7 @@
                     <form method="post" action="{% url 'update_cart_item' item.dish.id %}" class="qty-form">
                         {% csrf_token %}
                         <input type="number" name="quantity" min="1" value="{{ item.quantity }}"
-                               class="qty-input" onchange="this.form.submit(); updateRowTotal(this);">
+                               class="qty-input">
                     </form>
                 </td>
                 <td class="row-total">₾{{ item.total_price }}</td>
@@ -61,30 +61,38 @@
         <span id="cart-total">₾{{ cart.get_total_price }}</span>
     </div>
 
-    <a href="{% url 'dish_list' %}" class="btn btn-ghost">← მენიუზე დაბრუნება</a>
+    <div class="cart-actions">
+        <a href="{% url 'dish_list' %}" class="btn btn-ghost">← მენიუზე დაბრუნება</a>
+        <a href="{% url 'checkout' %}" class="btn btn-primary">შეკვეთის გაფორმება</a>
+    </div>
     {% endif %}
 </div>
 
 <script>
-    // მსუბუქი client-side გადათვლა, რომ ჯამი ვიზუალურად მყისვე იცვლებოდეს
-    // (რეალურ, ავტორიტეტულ მნიშვნელობას სერვერი ითვლის ფორმის გაგზავნისას)
-    function updateRowTotal(input) {
-        const row = input.closest('.cart-row');
-        const price = parseFloat(row.dataset.price);
-        const qty = parseInt(input.value) || 1;
-        const rowTotalCell = row.querySelector('.row-total');
-        rowTotalCell.textContent = '₾' + (price * qty).toFixed(2);
-        recalcCartTotal();
-    }
+    document.querySelectorAll('.qty-input').forEach(input => {
+        input.addEventListener('change', async () => {
+            const form = input.closest('form');
+            const row = input.closest('.cart-row');
+            const formData = new FormData(form);
 
-    function recalcCartTotal() {
-        let total = 0;
-        document.querySelectorAll('.cart-row').forEach(row => {
-            const price = parseFloat(row.dataset.price);
-            const qty = parseInt(row.querySelector('.qty-input').value) || 1;
-            total += price * qty;
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+            });
+
+            if (!response.ok) {
+                form.submit();
+                return;
+            }
+
+            const data = await response.json();
+            row.querySelector('.row-total').textContent = '₾' + data.item_total;
+            document.getElementById('cart-total').textContent = '₾' + data.cart_total;
+            document.querySelectorAll('.cart-badge').forEach(badge => {
+                badge.textContent = data.cart_count;
+            });
         });
-        document.getElementById('cart-total').textContent = '₾' + total.toFixed(2);
-    }
+    });
 </script>
 {% endblock %}
