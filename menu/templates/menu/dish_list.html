@@ -11,6 +11,11 @@
             <h2>ფილტრები</h2>
 
             <div class="filter-group">
+                <h3>ძიება</h3>
+                <input type="search" name="q" value="{{ search_query }}" placeholder="კერძის ძიება" class="search-input">
+            </div>
+
+            <div class="filter-group">
                 <h3>კატეგორია</h3>
                 {% for value, label in categories %}
                     <label class="checkbox-row">
@@ -56,14 +61,14 @@
 
     <section class="dish-grid-wrap">
         <h1>მენიუ</h1>
-        <p class="results-count">{{ dishes|length }} კერძი მოიძებნა</p>
+        <p class="results-count">{{ page_obj.paginator.count }} კერძი მოიძებნა</p>
 
         <div class="dish-grid">
             {% for dish in dishes %}
             <article class="dish-card">
                 <div class="dish-image">
-                    {% if dish.card_image_url %}
-                        <img src="{{ dish.card_image_url }}" alt="{{ dish.name }}">
+                    {% if dish.image %}
+                        <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
                     {% else %}
                         <div class="dish-image-placeholder">🍲</div>
                     {% endif %}
@@ -104,6 +109,18 @@
                 <p class="empty-state">ამ ფილტრებით კერძი ვერ მოიძებნა. სცადეთ სხვა კომბინაცია.</p>
             {% endfor %}
         </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% for category in selected_categories %}&category={{ category|urlencode }}{% endfor %}{% if max_spice != '' %}&max_spice={{ max_spice }}{% endif %}{% if walnuts %}&walnuts={{ walnuts }}{% endif %}{% if vegetarian %}&vegetarian={{ vegetarian }}{% endif %}">←</a>
+            {% endif %}
+            <span class="page-indicator">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% for category in selected_categories %}&category={{ category|urlencode }}{% endfor %}{% if max_spice != '' %}&max_spice={{ max_spice }}{% endif %}{% if walnuts %}&walnuts={{ walnuts }}{% endif %}{% if vegetarian %}&vegetarian={{ vegetarian }}{% endif %}">→</a>
+            {% endif %}
+        </nav>
+        {% endif %}
     </section>
 
 </div>
