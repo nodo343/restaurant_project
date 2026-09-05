@@ -69,6 +69,6 @@ class Command(BaseCommand):
                 updated_images += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f'დასრულდა. დაემატა {created_count} ახალი კერძი, '
-            f'სურათი განახლდა {updated_images} კერძზე (სულ {Dish.objects.count()}).'
+            f'Done. Created {created_count} new dishes, '
+            f'updated images for {updated_images} dishes (total {Dish.objects.count()}).'
         ))
